@@ -11,36 +11,34 @@ function fromDir(startPath) {
   const files = fs.readdirSync(startPath);
   for (let i = 0, filesLength = files.length; i < filesLength; i += 1) {
     const filename = path.join(startPath, files[i]);
-    if (filter.some((extension) => (filename.toLowerCase().indexOf(extension) >= 0))) {
-      let inputFile = filename;
-      let outputFile = path.join(resizedFolder, files[i]);
-      sharp(inputFile).resize({ width: 500 }).toFile(outputFile);
-      /*
+    // checks if the current file has the extension type of an image
+    if (filter.some((extension) => (path.extname(filename.toLowerCase()) === extension))) {
       const inStream = fs.createReadStream(filename);
       const outStream = fs.createWriteStream(path.join(resizedFolder, files[i]), { flags: 'w' });
-      inStream.once('open', (fd) => {
-          outStream.once('open', (fd) => {
-            const transform = sharp().resize({ width: 500 });
-            inStream.pipe(transform).pipe(outStream);
-          });
-          outStream.end();
-        });
-      */
+      const transform = sharp().resize({ width: 500 });
+      inStream.pipe(transform).pipe(outStream);
     }
   }
 }
 
 // creates the new folder where images will be stored
+try {
+  fs.access(resizedFolder);
+} catch (error) {
+  fs.mkdir(resizedFolder, (err) => {});
+}
+/*
 fs.access(resizedFolder, (error) => {
   if (error) {
     fs.mkdir(resizedFolder, (err) => {
       if (err) {
-        return err;
+        return console.log('why1');
       }
     });
-    return error;
+    return console.log('why2');
   }
-  return error;
+  return console.log('why3');
 });
+*/
 
 fromDir(dirPath);
