@@ -14,7 +14,7 @@ function fromDir(startPath) {
     if (filter.some((extension) => (filename.toLowerCase().indexOf(extension) >= 0))) {
       let inputFile = filename;
       let outputFile = path.join(resizedFolder, files[i]);
-      sharp(inputFile).resize({ width: 1040 }).toFile(outputFile);
+      sharp(inputFile).resize({ width: 500 }).toFile(outputFile);
       /*
       const inStream = fs.createReadStream(filename);
       const outStream = fs.createWriteStream(path.join(resizedFolder, files[i]), { flags: 'w' });
