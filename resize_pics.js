@@ -1,41 +1,46 @@
+// requirements
 const sharp = require('sharp');
 const path = require('path');
 const fs = require('fs');
+// in case we give the user the option of changing the folder in the future
+const dirPath = __dirname;
+const resizedFolder = path.join(dirPath, path.basename(`${dirPath} resized`));
 
-let filterType = ['.jpeg', '.jpg', '.png', '.webp', '.gif', '.svg'];
-let resizedFolder = path.join(__dirname, path.basename(__dirname) + " resized");
-
-function fromDir(startPath, filter) {
-    let files = fs.readdirSync(startPath);
-    let inStream, outStream, transform;
-    let filterLength = filter.length;
-
-    for (let i = 0, filesLength = files.length; i < filesLength; i++) {
-        var filename = path.join(startPath, files[i]);
-        for (let z = 0; z < filterLength; z++) {
-            if (filename.toLowerCase().indexOf(filter[z]) >= 0) {
-                console.log('-- found: ', filename);
-                // input stream
-                inStream = fs.createReadStream(filename);
-                // output stream
-                outStream = fs.createWriteStream(path.join(resizedFolder, files[i]), { flags: "w" });
-                transform = sharp()
-                    .resize({ width: 500 })
-                    .on('info', function(fileInfo) {
-                        console.log("Resizing done");
-                    });
-                inStream.pipe(transform).pipe(outStream);
-            };
-        }
-    };
-};
-
-//creates the new folder where images will be stored
-fs.mkdir(resizedFolder, (err) => {
-    if (err) {
-        return console.error(err);
+function fromDir(startPath) {
+  const filter = ['.jpeg', '.jpg', '.png', '.webp', '.gif', '.svg'];
+  const files = fs.readdirSync(startPath);
+  for (let i = 0, filesLength = files.length; i < filesLength; i += 1) {
+    const filename = path.join(startPath, files[i]);
+    if (filter.some((extension) => (filename.toLowerCase().indexOf(extension) >= 0))) {
+      let inputFile = filename;
+      let outputFile = path.join(resizedFolder, files[i]);
+      sharp(inputFile).resize({ width: 1040 }).toFile(outputFile);
+      /*
+      const inStream = fs.createReadStream(filename);
+      const outStream = fs.createWriteStream(path.join(resizedFolder, files[i]), { flags: 'w' });
+      inStream.once('open', (fd) => {
+          outStream.once('open', (fd) => {
+            const transform = sharp().resize({ width: 500 });
+            inStream.pipe(transform).pipe(outStream);
+          });
+          outStream.end();
+        });
+      */
     }
-    console.log('Directory created successfully!');
+  }
+}
+
+// creates the new folder where images will be stored
+fs.access(resizedFolder, (error) => {
+  if (error) {
+    fs.mkdir(resizedFolder, (err) => {
+      if (err) {
+        return err;
+      }
+    });
+    return error;
+  }
+  return error;
 });
 
-fromDir(__dirname, filterType);
+fromDir(dirPath);
